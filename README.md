@@ -24,4 +24,4 @@ This is a player select screen project built with Ruby2D, which has been refacto
 5. Use this project as a landing page for your portfolio website or any other website!
 
 ## Credits
-This project is based on the [Ruby2D Player Select Screen Tutorial](https://www.youtube.com/watch?v=sWsD_r_DQ4c), with refactoring and enhancements by Tomas Palpallatoc.
+This project is based on the [Ruby2D Player Select Screen Tutorial](https://www.youtube.com/watch?v=sWsD_r_DQ4c). Original assets were created by [CDmir](https://opengameart.org/users/cdmir) on [OpenGameArt.org](https://opengameart.org/content/asteroids-game-sprites-atlas). Refactoring and enhancements by Tomas Palpallatoc.
