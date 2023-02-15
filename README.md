@@ -16,9 +16,9 @@ This is a player select screen project built with Ruby2D, which has been refacto
 
 3. Navigate to the project directory and run the following command to start the app:
 
-   ```ruby
-   ruby app.rb
-  ```
+ ```ruby
+ ruby app.rb
+ ```
 4. The player select screen will be displayed in your default web browser. Customize the screen by modifying the `select_screen.rb` file to include your own branding and personal information.
 
 5. Use this project as a landing page for your portfolio website or any other website!
