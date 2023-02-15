@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
 
-ruby '2.7.6'
+ruby '3.1.0'
 
 gem 'ruby2d', '0.9.2'
