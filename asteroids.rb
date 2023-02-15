@@ -30,11 +30,14 @@ class Player
   HEIGHT = 46 * 3
 
   # allow rest of codebase to read position of player chars
-  attr_reader :x, :y
+  attr_reader :x, :y, :speed, :fire_rate
 
-  def initialize(image, x, y)
+  # can refactor arguments to, player type/descendent class, x, y position
+  def initialize(image, x, y, speed, fire_rate)
     @x = x
     @y = y
+    @speed = speed
+    @fire_rate = fire_rate
     # Sprite is created with image file name and given position
     @sprite = Sprite.new(
       image,
@@ -75,19 +78,22 @@ class PlayerSelectScreen
     title_text = Text.new('SELECT YOUR PLAYER', size: 32, y: 120)
     title_text.x = (Window.width - title_text.width) / 2
 
+    # put these values somewhere within player class, maybe descendent classes
     # Creating sprites for each player icon 
     @players = [
-      Player.new('spritesheets/shipsheet_1.png', Window.width * (1/4.0) - Player::WIDTH / 2, 240),
-      Player.new('spritesheets/shipsheet_2.png', Window.width * (2/4.0) - Player::WIDTH / 2, 240),
-      Player.new('spritesheets/shipsheet_3.png', Window.width * (3/4.0) - Player::WIDTH / 2, 240)
+      Player.new('spritesheets/shipsheet_1.png', Window.width * (1/4.0) - Player::WIDTH / 2, 240, 80, 80),
+      Player.new('spritesheets/shipsheet_2.png', Window.width * (2/4.0) - Player::WIDTH / 2, 240, 100, 60),
+      Player.new('spritesheets/shipsheet_3.png', Window.width * (3/4.0) - Player::WIDTH / 2, 240, 60, 100)
     ]
 
+    # set player object as selected playerso with_index doesn't have to be used, maybe as active? attribute of player object
     # set middle player as default selection
     @selected_player = 1
 
     # update player animation speed/masks
     animate_players
     add_player_masks
+    set_player_stat_text
   end
 
   def update
@@ -117,10 +123,14 @@ class PlayerSelectScreen
       @selected_player = (@selected_player + 1) % 3
     end
 
+    #move this block to some sort of update screen method
     # update player animation speed/masks
     animate_players
     add_player_masks
+    set_player_stat_text
   end
+
+  # private?
 
   # draw circles/highlights around each player sprite 
   def add_player_masks
@@ -142,11 +152,39 @@ class PlayerSelectScreen
         # says how many triangles to use to draw circle, need more to make well formed circle
         sectors: 32,
         # set highlight/circle position based on players position
+        # can move this out to method for Player class, x_center(optional_offset), y_center
         x: player.x + (Player::WIDTH / 2),
         y: player.y + (Player::HEIGHT / 2),
         color: color,
         z: z
       )
+    end
+  end
+
+  # text objects displaying players stats
+  def set_player_stat_text
+    @players_stat_texts && @players_stat_texts.each { |text| text.remove }
+    @players_stat_texts = []
+    # maybe try to figure out how to do without with_index
+    @players.each_with_index do |player, index|
+      # set color for text based on if player is selected
+      if index == @selected_player
+        color = Color.new([1,1,1,1]) # white
+      else
+        color = Color.new([0.3,0.3,0.3,1]) # grey
+      end
+
+      # speed text displays player speed, below player sprite, color based on selected player
+      speed_text = Text.new("Speed - #{player.speed}%", size: 20, y: player.y + 200, color: color)
+      # consider moving these width - object width calculations to a position calculator within player class
+      # set speed text x value to center on player
+      speed_text.x = player.x + ((Player::WIDTH - speed_text.width)/2)
+
+      fire_rate_text = Text.new("Fire rate - #{player.fire_rate}%", size: 20, y: player.y + 220, color: color )
+      fire_rate_text.x = player.x + ((Player::WIDTH - fire_rate_text.width)/2)
+
+      @players_stat_texts.push(speed_text)
+      @players_stat_texts.push(fire_rate_text)
     end
   end
 end
