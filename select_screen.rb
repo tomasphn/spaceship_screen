@@ -81,9 +81,9 @@ class PlayerSelectScreen
     # put these values somewhere within player class, maybe descendent classes
     # Creating sprites for each player icon 
     @players = [
-      Player.new('spritesheets/shipsheet_1.png', Window.width * (1/4.0) - Player::WIDTH / 2, 240, 80, 80),
-      Player.new('spritesheets/shipsheet_2.png', Window.width * (2/4.0) - Player::WIDTH / 2, 240, 100, 60),
-      Player.new('spritesheets/shipsheet_3.png', Window.width * (3/4.0) - Player::WIDTH / 2, 240, 60, 100)
+      Player.new('images/ship_1.png', Window.width * (1/4.0) - Player::WIDTH / 2, 240, 80, 80),
+      Player.new('images/ship_2.png', Window.width * (2/4.0) - Player::WIDTH / 2, 240, 100, 60),
+      Player.new('images/ship_3.png', Window.width * (3/4.0) - Player::WIDTH / 2, 240, 60, 100)
     ]
 
     # set player object as selected playerso with_index doesn't have to be used, maybe as active? attribute of player object
