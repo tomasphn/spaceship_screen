@@ -1,4 +1,5 @@
 require "ruby2d"
+require "pry"
 
 set title: "Asteroids"
 set width: 800
@@ -26,18 +27,17 @@ class Star
 end
 
 class Player
+  # pixel h/w of each individual sprite on spritesheet, *3 because theres 3 sprites per sheet
   WIDTH = 32 * 3
   HEIGHT = 46 * 3
 
   # allow rest of codebase to read position of player chars
-  attr_reader :x, :y, :speed, :fire_rate
+  attr_reader :x, :y, :label
 
-  # can refactor arguments to, player type/descendent class, x, y position
-  def initialize(image, x, y, speed, fire_rate)
+  def initialize(image, x, y, label)
     @x = x
     @y = y
-    @speed = speed
-    @fire_rate = fire_rate
+    @label = label
     # Sprite is created with image file name and given position
     @sprite = Sprite.new(
       image,
@@ -70,30 +70,30 @@ class PlayerSelectScreen
     @stars = Array.new(100).map { Star.new }
 
     # Text object which displays Title, 72 font size
-    title_text = Text.new('ASTEROIDS', size: 72, y: 40)
+    title_text = Text.new('Portfolio Site', size: 72, y: 50, font: "fasthand.ttf")
     # Centers text using width of screen, x marks beginning of where object will display
     title_text.x = (Window.width - title_text.width) / 2
 
     # Text object for subtitle text, 32 font size, centered
-    title_text = Text.new('SELECT YOUR PLAYER', size: 32, y: 120)
+    title_text = Text.new('SELECT YOUR PLAYER', size: 50, y: 120, font: "chronosfer.otf")
     title_text.x = (Window.width - title_text.width) / 2
 
     # put these values somewhere within player class, maybe descendent classes
     # Creating sprites for each player icon 
     @players = [
-      Player.new('images/ship_1.png', Window.width * (1/4.0) - Player::WIDTH / 2, 240, 80, 80),
-      Player.new('images/ship_2.png', Window.width * (2/4.0) - Player::WIDTH / 2, 240, 100, 60),
-      Player.new('images/ship_3.png', Window.width * (3/4.0) - Player::WIDTH / 2, 240, 60, 100)
+      Player.new('images/ship_1.png', Window.width * (1/4.0) - Player::WIDTH / 2, 240, "Work"),
+      Player.new('images/ship_2.png', Window.width * (2/4.0) - Player::WIDTH / 2, 240, "Projects"),
+      Player.new('images/ship_3.png', Window.width * (3/4.0) - Player::WIDTH / 2, 240, "About Me")
     ]
 
-    # set player object as selected playerso with_index doesn't have to be used, maybe as active? attribute of player object
     # set middle player as default selection
-    @selected_player = 1
-
-    # update player animation speed/masks
-    animate_players
-    add_player_masks
-    set_player_stat_text
+    @selected_player = @players[1]
+    # Initial setup of labels and masks
+    set_player_masks
+    set_player_labels
+  
+    # update color of label/masks/animation based on selection
+    update_players
   end
 
   def update
@@ -106,8 +106,8 @@ class PlayerSelectScreen
 
   # makes player play specific animation depending on hover
   def animate_players
-    @players.each_with_index do |player, index|
-      if index == @selected_player
+    @players.each do |player, index|
+      if player == @selected_player
         player.animate_fast
       else
         player.animate_slow
@@ -118,74 +118,60 @@ class PlayerSelectScreen
   # Changing selected player based on key which triggered method
   def move(direction)
     if direction == :left
-      @selected_player = (@selected_player - 1) % 3
+      @selected_player = @players[(@players.index(@selected_player) - 1) % 3]
     elsif direction == :right
-      @selected_player = (@selected_player + 1) % 3
+      @selected_player = @players[(@players.index(@selected_player) + 1) % 3]
     end
-
-    #move this block to some sort of update screen method
     # update player animation speed/masks
-    animate_players
-    add_player_masks
-    set_player_stat_text
+    update_players
   end
 
   # private?
 
   # draw circles/highlights around each player sprite 
-  def add_player_masks
-    # block will remove masks if player masks are set
-    @player_masks && @player_masks.each { |mask| mask.remove }
-
-    # change color of circle and position (over or behind) based on selection
-    @player_masks = @players.each_with_index.map do |player, index|
-      if index == @selected_player
-        color = [0.2, 0.2, 0.2, 0.6]
-        z = -1
-      else
-        color = [0.0, 0.0, 0.0, 0.6]
-        z = 2
-      end
-
+  def set_player_masks
+    @player_masks = @players.map do |player|
       Circle.new(
         radius: 100,
         # says how many triangles to use to draw circle, need more to make well formed circle
         sectors: 32,
         # set highlight/circle position based on players position
-        # can move this out to method for Player class, x_center(optional_offset), y_center
         x: player.x + (Player::WIDTH / 2),
         y: player.y + (Player::HEIGHT / 2),
-        color: color,
-        z: z
       )
     end
   end
 
-  # text objects displaying players stats
-  def set_player_stat_text
-    @players_stat_texts && @players_stat_texts.each { |text| text.remove }
-    @players_stat_texts = []
-    # maybe try to figure out how to do without with_index
-    @players.each_with_index do |player, index|
-      # set color for text based on if player is selected
-      if index == @selected_player
-        color = Color.new([1,1,1,1]) # white
-      else
-        color = Color.new([0.3,0.3,0.3,1]) # grey
-      end
-
-      # speed text displays player speed, below player sprite, color based on selected player
-      speed_text = Text.new("Speed - #{player.speed}%", size: 20, y: player.y + 200, color: color)
-      # consider moving these width - object width calculations to a position calculator within player class
-      # set speed text x value to center on player
-      speed_text.x = player.x + ((Player::WIDTH - speed_text.width)/2)
-
-      fire_rate_text = Text.new("Fire rate - #{player.fire_rate}%", size: 20, y: player.y + 220, color: color )
-      fire_rate_text.x = player.x + ((Player::WIDTH - fire_rate_text.width)/2)
-
-      @players_stat_texts.push(speed_text)
-      @players_stat_texts.push(fire_rate_text)
+  # initially set player labels 
+  def set_player_labels
+    @player_labels = @players.map do |player|
+      # creates player label below player sprite, color based on selected player
+      player_label = Text.new(player.label, size: 40, y: player.y + 180, font: "chronosfer.otf")
+      # set label text x value to center on player
+      player_label.x = player.x + ((Player::WIDTH - player_label.width)/2)
+      player_label
     end
+  end
+
+  # updates color of masks and labels based on selection
+  def update_labels_highlights
+    @players.each_with_index do |player, index|
+      if player == @selected_player
+        @player_labels[index].color = Color.new([1,1,1,1]) # white
+        @player_masks[index].color = Color.new([0.2, 0.2, 0.2, 0.6]) # light grey
+        @player_masks[index].z = -1
+      else
+        @player_labels[index].color = Color.new([0.3,0.3,0.3,1]) # grey
+        @player_masks[index].color = Color.new([0.0, 0.0, 0.0, 0.6]) # black
+        @player_masks[index].z = 2
+      end
+    end
+  end
+
+  # updates player animations, masks and under text
+  def update_players
+    animate_players
+    update_labels_highlights
   end
 end
 
@@ -194,7 +180,6 @@ player_select_screen = PlayerSelectScreen.new
 
 # update function called each frame
 update do
-  # PlayerSelectScreen#update
   player_select_screen.update
 end
 
